@@ -1,7 +1,9 @@
-use crate::*;
+use std::{cmp, ops};
 
-impl ops::Add for &iBig {
-    type Output = iBig;
+use crate::iHuge;
+
+impl ops::Add for &iHuge {
+    type Output = iHuge;
 
     fn add(self, rhs: Self) -> Self::Output {
         let len = cmp::max(self.digits.len(), rhs.digits.len());
@@ -19,12 +21,12 @@ impl ops::Add for &iBig {
             };
             digits.push(ld + rd);
         }
-        iBig { digits }.carry_and_borrow()
+        iHuge { digits }.carry_and_borrow()
     }
 }
 
-impl ops::Sub for &iBig {
-    type Output = iBig;
+impl ops::Sub for &iHuge {
+    type Output = iHuge;
 
     fn sub(self, rhs: Self) -> Self::Output {
         let len = cmp::max(self.digits.len(), rhs.digits.len());
@@ -42,11 +44,11 @@ impl ops::Sub for &iBig {
             };
             digits.push(ld - rd);
         }
-        iBig { digits }.carry_and_borrow()
+        iHuge { digits }.carry_and_borrow()
     }
 }
 
-impl iBig {
+impl iHuge {
     fn carry_and_borrow(mut self) -> Self {
         for i in 0..(self.digits.len() - 1) {
             if self.digits[i] >= 10 {
@@ -86,41 +88,41 @@ mod tests {
 
     #[test]
     fn add_0() {
-        let lhs = iBig::from_str("2023").unwrap();
-        let rhs = iBig::from_str("601").unwrap();
-        let answer = iBig::from_str("2624").unwrap();
+        let lhs = iHuge::from_str("2023").unwrap();
+        let rhs = iHuge::from_str("601").unwrap();
+        let answer = iHuge::from_str("2624").unwrap();
         assert_eq!(&lhs + &rhs, answer);
     }
 
     #[test]
     fn add_with_carry_0() {
-        let lhs = iBig::from_str("999").unwrap();
-        let rhs = iBig::from_str("415").unwrap();
-        let answer = iBig::from_str("1414").unwrap();
+        let lhs = iHuge::from_str("999").unwrap();
+        let rhs = iHuge::from_str("415").unwrap();
+        let answer = iHuge::from_str("1414").unwrap();
         assert_eq!(&lhs + &rhs, answer);
     }
 
     #[test]
     fn add_with_carry_1() {
-        let lhs = iBig::from_str("999").unwrap();
-        let rhs = iBig::from_str("999").unwrap();
-        let answer = iBig::from_str("1998").unwrap();
+        let lhs = iHuge::from_str("999").unwrap();
+        let rhs = iHuge::from_str("999").unwrap();
+        let answer = iHuge::from_str("1998").unwrap();
         assert_eq!(&lhs + &rhs, answer);
     }
 
     #[test]
     fn sub_0() {
-        let lhs = iBig::from_str("999").unwrap();
-        let rhs = iBig::from_str("415").unwrap();
-        let answer = iBig::from_str("584").unwrap();
+        let lhs = iHuge::from_str("999").unwrap();
+        let rhs = iHuge::from_str("415").unwrap();
+        let answer = iHuge::from_str("584").unwrap();
         assert_eq!(&lhs - &rhs, answer);
     }
 
     #[test]
     fn sub_with_borrow_0() {
-        let lhs = iBig::from_str("584").unwrap();
-        let rhs = iBig::from_str("495").unwrap();
-        let answer = iBig::from_str("89").unwrap();
+        let lhs = iHuge::from_str("584").unwrap();
+        let rhs = iHuge::from_str("495").unwrap();
+        let answer = iHuge::from_str("89").unwrap();
         assert_eq!(&lhs - &rhs, answer);
     }
 }
