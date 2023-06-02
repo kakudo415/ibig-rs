@@ -1,128 +1,79 @@
 use std::{cmp, ops};
 
-use crate::iHuge;
+use crate::{pop_zero, uHuge};
 
-impl ops::Add for &iHuge {
-    type Output = iHuge;
+impl ops::Add for &uHuge {
+    type Output = uHuge;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let len = cmp::max(self.digits.len(), rhs.digits.len());
-        let mut digits = Vec::with_capacity(len + 1);
-        for i in 0..len {
-            let ld = if self.digits.len() > i {
-                self.digits[i]
-            } else {
-                0
-            };
-            let rd = if rhs.digits.len() > i {
-                rhs.digits[i]
-            } else {
-                0
-            };
-            digits.push(ld + rd);
-        }
-        iHuge { digits }.carry_and_borrow()
+        let len = cmp::max(self.digits.len(), rhs.digits.len()) + 1;
+        let mut digits = vec![0; len];
+        add(&mut digits, &self.digits, &rhs.digits);
+        uHuge { digits }
     }
 }
 
-impl ops::Sub for &iHuge {
-    type Output = iHuge;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        let len = cmp::max(self.digits.len(), rhs.digits.len());
-        let mut digits = Vec::with_capacity(len + 1);
-        for i in 0..len {
-            let ld = if self.digits.len() > i {
-                self.digits[i]
-            } else {
-                0
-            };
-            let rd = if rhs.digits.len() > i {
-                rhs.digits[i]
-            } else {
-                0
-            };
-            digits.push(ld - rd);
-        }
-        iHuge { digits }.carry_and_borrow()
+fn add(acc: &mut Vec<usize>, lhs: &Vec<usize>, rhs: &Vec<usize>) {
+    let mut carry = false;
+    for i in 0..acc.len() {
+        let ld = if lhs.len() > i { lhs[i] } else { 0 };
+        let rd = if rhs.len() > i { rhs[i] } else { 0 };
+        (acc[i], carry) = addc(ld, rd, carry);
     }
+    pop_zero(acc);
 }
 
-impl iHuge {
-    pub(crate) fn carry_and_borrow(mut self) -> Self {
-        for i in 0..(self.digits.len() - 1) {
-            if self.digits[i] >= 10 {
-                self.digits[i + 1] += self.digits[i] / 10;
-                self.digits[i] %= 10;
-            }
-            if self.digits[i] <= -1 {
-                let b = (-self.digits[i] - 1) / 10 + 1;
-                self.digits[i + 1] -= b;
-                self.digits[i] += 10 * b;
-            }
-        }
-        while let Some(highest) = self.digits.pop() {
-            if highest < 10 {
-                self.digits.push(highest);
-                break;
-            }
-            self.digits.push(highest % 10);
-            self.digits.push(highest / 10);
-        }
-        while let Some(highest) = self.digits.pop() {
-            if highest != 0 {
-                self.digits.push(highest);
-                break;
-            }
-        }
-        if self.digits.len() == 0 {
-            self.digits.push(0);
-        }
-        self
-    }
+pub(crate) fn addc(lhs: usize, rhs: usize, carry: bool) -> (usize, bool) {
+    let (acc, c1) = usize::overflowing_add(lhs, rhs);
+    let (acc, c2) = usize::overflowing_add(acc, carry as usize);
+    (acc, c1 || c2) // Carry will occur at most once
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::*;
+    use super::*;
+
+    #[test]
+    fn addc_0() {
+        let lhs = usize::MAX;
+        let rhs = usize::MAX;
+        let ans = (usize::MAX - 1, true);
+        assert_eq!(addc(lhs, rhs, false), ans);
+    }
+
+    #[test]
+    fn addc_1() {
+        let lhs = usize::MAX;
+        let rhs = usize::MAX;
+        let ans = (usize::MAX, true);
+        assert_eq!(addc(lhs, rhs, true), ans);
+    }
 
     #[test]
     fn add_0() {
-        let lhs = iHuge::from_str("2023").unwrap();
-        let rhs = iHuge::from_str("601").unwrap();
-        let answer = iHuge::from_str("2624").unwrap();
-        assert_eq!(&lhs + &rhs, answer);
+        let lhs = uHuge {
+            digits: vec![12345],
+        };
+        let rhs = uHuge {
+            digits: vec![67890],
+        };
+        let ans = uHuge {
+            digits: vec![80235],
+        };
+        assert_eq!(&lhs + &rhs, ans);
     }
 
     #[test]
-    fn add_with_carry_0() {
-        let lhs = iHuge::from_str("999").unwrap();
-        let rhs = iHuge::from_str("415").unwrap();
-        let answer = iHuge::from_str("1414").unwrap();
-        assert_eq!(&lhs + &rhs, answer);
-    }
-
-    #[test]
-    fn add_with_carry_1() {
-        let lhs = iHuge::from_str("999").unwrap();
-        let rhs = iHuge::from_str("999").unwrap();
-        let answer = iHuge::from_str("1998").unwrap();
-        assert_eq!(&lhs + &rhs, answer);
-    }
-
-    #[test]
-    fn sub_0() {
-        let lhs = iHuge::from_str("999").unwrap();
-        let rhs = iHuge::from_str("415").unwrap();
-        let answer = iHuge::from_str("584").unwrap();
-        assert_eq!(&lhs - &rhs, answer);
-    }
-
-    #[test]
-    fn sub_with_borrow_0() {
-        let lhs = iHuge::from_str("584").unwrap();
-        let rhs = iHuge::from_str("495").unwrap();
-        let answer = iHuge::from_str("89").unwrap();
-        assert_eq!(&lhs - &rhs, answer);
+    fn add_1() {
+        let lhs = uHuge {
+            digits: vec![usize::MAX],
+        };
+        let rhs = uHuge {
+            digits: vec![usize::MAX, usize::MAX],
+        };
+        let ans = uHuge {
+            digits: vec![usize::MAX - 1, 0, 1],
+        };
+        assert_eq!(&lhs + &rhs, ans);
     }
 }
