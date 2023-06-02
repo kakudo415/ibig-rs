@@ -49,7 +49,7 @@ impl ops::Sub for &iHuge {
 }
 
 impl iHuge {
-    fn carry_and_borrow(mut self) -> Self {
+    pub(crate) fn carry_and_borrow(mut self) -> Self {
         for i in 0..(self.digits.len() - 1) {
             if self.digits[i] >= 10 {
                 self.digits[i + 1] += self.digits[i] / 10;
