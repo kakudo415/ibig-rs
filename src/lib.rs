@@ -3,19 +3,19 @@ mod mul;
 
 use std::fmt;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq)]
 pub struct iHuge {
-    digits: Vec<i8>,
+    digits: Vec<isize>,
 }
 
 impl iHuge {
     pub fn from_str(s: &str) -> Result<Self> {
         let mut digits = Vec::new();
         for c in s.chars().rev() {
-            digits.push(c.to_digit(10).unwrap() as i8);
+            digits.push(c.to_digit(10).context("Parse Error")? as isize);
         }
         Ok(iHuge { digits })
     }

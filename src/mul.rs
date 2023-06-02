@@ -41,5 +41,12 @@ mod tests {
         let answer = iHuge::from_str("126419751936").unwrap();
         assert_eq!(&lhs * &rhs, answer);
     }
-}
 
+    #[test]
+    fn mul_2() {
+        let lhs = iHuge::from_str("18446744073709551615").unwrap();
+        let rhs = iHuge::from_str("18446744073709551615").unwrap();
+        let answer = iHuge::from_str("340282366920938463426481119284349108225").unwrap();
+        assert_eq!(&lhs * &rhs, answer);
+    }
+}
