@@ -1,6 +1,6 @@
 use std::{cmp, ops};
 
-use crate::{pop_zero, uHuge};
+use crate::{pop_zero, uHuge, word};
 
 impl ops::Add for &uHuge {
     type Output = uHuge;
@@ -13,19 +13,20 @@ impl ops::Add for &uHuge {
     }
 }
 
-fn add(acc: &mut Vec<usize>, lhs: &Vec<usize>, rhs: &Vec<usize>) {
+fn add(acc: &mut Vec<word>, lhs: &Vec<word>, rhs: &Vec<word>) {
     let mut carry = false;
     for i in 0..acc.len() {
         let ld = if lhs.len() > i { lhs[i] } else { 0 };
         let rd = if rhs.len() > i { rhs[i] } else { 0 };
-        (acc[i], carry) = addc(ld, rd, carry);
+        (acc[i], carry) = carrying_add(ld, rd, carry);
     }
     pop_zero(acc);
 }
 
-pub(crate) fn addc(lhs: usize, rhs: usize, carry: bool) -> (usize, bool) {
-    let (acc, c1) = usize::overflowing_add(lhs, rhs);
-    let (acc, c2) = usize::overflowing_add(acc, carry as usize);
+// This function will be replaced when std::usize::carrying_add is in stable
+pub(crate) fn carrying_add(lhs: word, rhs: word, carry: bool) -> (word, bool) {
+    let (acc, c1) = word::overflowing_add(lhs, rhs);
+    let (acc, c2) = word::overflowing_add(acc, carry as word);
     (acc, c1 || c2) // Carry will occur at most once
 }
 
@@ -34,19 +35,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn addc_0() {
-        let lhs = usize::MAX;
-        let rhs = usize::MAX;
-        let ans = (usize::MAX - 1, true);
-        assert_eq!(addc(lhs, rhs, false), ans);
+    fn carrying_add_0() {
+        let lhs = word::MAX;
+        let rhs = word::MAX;
+        let ans = (word::MAX - 1, true);
+        assert_eq!(carrying_add(lhs, rhs, false), ans);
     }
 
     #[test]
-    fn addc_1() {
-        let lhs = usize::MAX;
-        let rhs = usize::MAX;
-        let ans = (usize::MAX, true);
-        assert_eq!(addc(lhs, rhs, true), ans);
+    fn carrying_add_1() {
+        let lhs = word::MAX;
+        let rhs = word::MAX;
+        let ans = (word::MAX, true);
+        assert_eq!(carrying_add(lhs, rhs, true), ans);
     }
 
     #[test]
@@ -66,13 +67,13 @@ mod tests {
     #[test]
     fn add_1() {
         let lhs = uHuge {
-            digits: vec![usize::MAX],
+            digits: vec![word::MAX],
         };
         let rhs = uHuge {
-            digits: vec![usize::MAX, usize::MAX],
+            digits: vec![word::MAX, word::MAX],
         };
         let ans = uHuge {
-            digits: vec![usize::MAX - 1, 0, 1],
+            digits: vec![word::MAX - 1, 0, 1],
         };
         assert_eq!(&lhs + &rhs, ans);
     }

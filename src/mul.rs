@@ -1,6 +1,6 @@
 use std::ops;
 
-use crate::{pop_zero, uHuge};
+use crate::{dword, pop_zero, uHuge, word};
 
 impl ops::Mul for &uHuge {
     type Output = uHuge;
@@ -13,11 +13,11 @@ impl ops::Mul for &uHuge {
     }
 }
 
-fn mul(acc: &mut Vec<usize>, lhs: &Vec<usize>, rhs: &Vec<usize>) {
+fn mul(acc: &mut Vec<word>, lhs: &Vec<word>, rhs: &Vec<word>) {
     for (i, ld) in lhs.iter().enumerate() {
         let mut carry = 0;
         for (j, rd) in rhs.iter().enumerate() {
-            (acc[i + j], carry) = mulpc(*ld, *rd, acc[i + j], carry);
+            (acc[i + j], carry) = pred_carrying_mul(*ld, *rd, acc[i + j], carry);
         }
         acc[i + rhs.len()] = carry;
     }
@@ -25,10 +25,9 @@ fn mul(acc: &mut Vec<usize>, lhs: &Vec<usize>, rhs: &Vec<usize>) {
 }
 
 // carry + pred + lhs * rhs = (ans, carry)
-pub(crate) fn mulpc(lhs: usize, rhs: usize, pred: usize, carry: usize) -> (usize, usize) {
-    // FIXME: u128 is not necessarily twice the bit size of usize
-    let acc: u128 = carry as u128 + pred as u128 + lhs as u128 * rhs as u128;
-    (acc as usize, (acc >> 64) as usize)
+pub(crate) fn pred_carrying_mul(lhs: word, rhs: word, pred: word, carry: word) -> (word, word) {
+    let acc: dword = carry as dword + pred as dword + lhs as dword * rhs as dword;
+    (acc as word, (acc >> word::BITS) as word)
 }
 
 #[cfg(test)]
@@ -36,13 +35,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn mulpc_0() {
-        let lhs = usize::MAX;
-        let rhs = usize::MAX;
-        let pred = usize::MAX;
-        let carry = usize::MAX;
-        let ans = (usize::MAX, usize::MAX);
-        assert_eq!(mulpc(lhs, rhs, pred, carry), ans);
+    fn pred_carrying_mul_0() {
+        let lhs = word::MAX;
+        let rhs = word::MAX;
+        let pred = word::MAX;
+        let carry = word::MAX;
+        let ans = (word::MAX, word::MAX);
+        assert_eq!(pred_carrying_mul(lhs, rhs, pred, carry), ans);
     }
 
     #[test]
@@ -62,10 +61,10 @@ mod tests {
     #[test]
     fn mul_1() {
         let lhs = uHuge {
-            digits: vec![usize::MAX],
+            digits: vec![word::MAX],
         };
         let rhs = uHuge {
-            digits: vec![usize::MAX],
+            digits: vec![word::MAX],
         };
         let ans = uHuge {
             digits: vec![1, 18446744073709551614],
@@ -76,13 +75,13 @@ mod tests {
     #[test]
     fn mul_2() {
         let lhs = uHuge {
-            digits: vec![usize::MAX],
+            digits: vec![word::MAX],
         };
         let rhs = uHuge {
-            digits: vec![usize::MAX; 4],
+            digits: vec![word::MAX; 4],
         };
         let ans = uHuge {
-            digits: vec![1, usize::MAX, usize::MAX, usize::MAX, usize::MAX - 1],
+            digits: vec![1, word::MAX, word::MAX, word::MAX, word::MAX - 1],
         };
         assert_eq!(&lhs * &rhs, ans);
     }
@@ -90,21 +89,21 @@ mod tests {
     #[test]
     fn mul_3() {
         let lhs = uHuge {
-            digits: vec![usize::MAX; 3],
+            digits: vec![word::MAX; 3],
         };
         let rhs = uHuge {
-            digits: vec![usize::MAX; 5],
+            digits: vec![word::MAX; 5],
         };
         let ans = uHuge {
             digits: vec![
                 1,
                 0,
                 0,
-                usize::MAX,
-                usize::MAX,
-                usize::MAX - 1,
-                usize::MAX,
-                usize::MAX,
+                word::MAX,
+                word::MAX,
+                word::MAX - 1,
+                word::MAX,
+                word::MAX,
             ],
         };
         assert_eq!(&lhs * &rhs, ans);
