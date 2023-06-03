@@ -27,7 +27,8 @@ impl ops::Sub for &uHuge {
     type Output = uHuge;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        let mut digits = vec![0; self.digits.len()];
+        let len = cmp::max(self.digits.len(), rhs.digits.len());
+        let mut digits = vec![0; len];
         sub(&mut digits, &self.digits, &rhs.digits);
         uHuge { digits }
     }
@@ -82,29 +83,17 @@ mod tests {
 
     #[test]
     fn add_0() {
-        let lhs = uHuge {
-            digits: vec![12345],
-        };
-        let rhs = uHuge {
-            digits: vec![67890],
-        };
-        let ans = uHuge {
-            digits: vec![80235],
-        };
+        let lhs = uHuge::from_str("12345").unwrap();
+        let rhs = uHuge::from_str("67890").unwrap();
+        let ans = uHuge::from_str("79BD5").unwrap();
         assert_eq!(&lhs + &rhs, ans);
     }
 
     #[test]
     fn add_1() {
-        let lhs = uHuge {
-            digits: vec![word::MAX],
-        };
-        let rhs = uHuge {
-            digits: vec![word::MAX, word::MAX],
-        };
-        let ans = uHuge {
-            digits: vec![word::MAX - 1, 0, 1],
-        };
+        let lhs = uHuge::from_str("FFFFFFFFFFFFFFFF").unwrap();
+        let rhs = uHuge::from_str("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").unwrap();
+        let ans = uHuge::from_str("00000000000000010000000000000000FFFFFFFFFFFFFFFE").unwrap();
         assert_eq!(&lhs + &rhs, ans);
     }
 
@@ -126,42 +115,26 @@ mod tests {
 
     #[test]
     fn sub_0() {
-        let lhs = uHuge {
-            digits: vec![word::MAX, 0, word::MAX],
-        };
-        let rhs = uHuge {
-            digits: vec![word::MAX, word::MAX],
-        };
-        let ans = uHuge {
-            digits: vec![0, 1, word::MAX - 1],
-        };
+        let lhs = uHuge::from_str("FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF").unwrap();
+        let rhs = uHuge::from_str("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").unwrap();
+        let ans = uHuge::from_str("FFFFFFFFFFFFFFFE00000000000000010000000000000000").unwrap();
         assert_eq!(&lhs - &rhs, ans);
     }
 
     #[test]
     #[should_panic]
     fn sub_1() {
-        let lhs = uHuge {
-            digits: vec![word::MAX],
-        };
-        let rhs = uHuge {
-            digits: vec![word::MAX, word::MAX],
-        };
-        let ans = uHuge { digits: vec![0] };
+        let lhs = uHuge::from_str("FFFFFFFFFFFFFFFF").unwrap();
+        let rhs = uHuge::from_str("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").unwrap();
+        let ans = uHuge::from_str("0").unwrap();
         assert_eq!(&lhs - &rhs, ans);
     }
 
     #[test]
     fn sub_2() {
-        let lhs = uHuge {
-            digits: vec![word::MAX, word::MAX, word::MAX],
-        };
-        let rhs = uHuge {
-            digits: vec![0, word::MAX, word::MAX],
-        };
-        let ans = uHuge {
-            digits: vec![word::MAX],
-        };
+        let lhs = uHuge::from_str("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").unwrap();
+        let rhs = uHuge::from_str("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000000000").unwrap();
+        let ans = uHuge::from_str("FFFFFFFFFFFFFFFF").unwrap();
         assert_eq!(&lhs - &rhs, ans);
     }
 }

@@ -46,76 +46,33 @@ mod tests {
 
     #[test]
     fn mul_0() {
-        let lhs = uHuge {
-            digits: vec![12345],
-        };
-        let rhs = uHuge {
-            digits: vec![67890],
-        };
-        let ans = uHuge {
-            digits: vec![838102050],
-        };
+        let lhs = uHuge::from_str("FFFFFFFFFFFFFFFF").unwrap();
+        let rhs = uHuge::from_str("FFFFFFFFFFFFFFFF").unwrap();
+        let ans = uHuge::from_str("FFFFFFFFFFFFFFFE0000000000000001").unwrap();
         assert_eq!(&lhs * &rhs, ans);
     }
 
     #[test]
     fn mul_1() {
-        let lhs = uHuge {
-            digits: vec![word::MAX],
-        };
-        let rhs = uHuge {
-            digits: vec![word::MAX],
-        };
-        let ans = uHuge {
-            digits: vec![1, 18446744073709551614],
-        };
+        let lhs = uHuge::from_str("FFFFFFFFFFFFFFFF").unwrap();
+        let rhs = uHuge::from_str("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").unwrap();
+        let ans = uHuge::from_str("FFFFFFFFFFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000000001").unwrap();
         assert_eq!(&lhs * &rhs, ans);
     }
 
     #[test]
     fn mul_2() {
-        let lhs = uHuge {
-            digits: vec![word::MAX],
-        };
-        let rhs = uHuge {
-            digits: vec![word::MAX; 4],
-        };
-        let ans = uHuge {
-            digits: vec![1, word::MAX, word::MAX, word::MAX, word::MAX - 1],
-        };
+        let lhs = uHuge::from_str("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").unwrap();
+        let rhs = uHuge::from_str("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF").unwrap();
+        let ans = uHuge::from_str("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000000000000000000000000000001").unwrap();
         assert_eq!(&lhs * &rhs, ans);
     }
 
     #[test]
     fn mul_3() {
-        let lhs = uHuge {
-            digits: vec![word::MAX; 3],
-        };
-        let rhs = uHuge {
-            digits: vec![word::MAX; 5],
-        };
-        let ans = uHuge {
-            digits: vec![
-                1,
-                0,
-                0,
-                word::MAX,
-                word::MAX,
-                word::MAX - 1,
-                word::MAX,
-                word::MAX,
-            ],
-        };
-        assert_eq!(&lhs * &rhs, ans);
-    }
-
-    #[test]
-    fn mul_4() {
-        let lhs = uHuge { digits: vec![1; 3] };
-        let rhs = uHuge { digits: vec![1; 5] };
-        let ans = uHuge {
-            digits: vec![1, 2, 3, 3, 3, 2, 1],
-        };
+        let lhs = uHuge::from_str("000000000000000100000000000000010000000000000001").unwrap();
+        let rhs = uHuge::from_str("00000000000000010000000000000001000000000000000100000000000000010000000000000001").unwrap();
+        let ans = uHuge::from_str("0000000000000001000000000000000200000000000000030000000000000003000000000000000300000000000000020000000000000001").unwrap();
         assert_eq!(&lhs * &rhs, ans);
     }
 
