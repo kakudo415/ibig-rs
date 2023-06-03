@@ -29,6 +29,7 @@ impl uHuge {
             end -= width;
         }
         digits.push(word::from_str_radix(&s[..end], 16)?);
+        pop_zero(&mut digits);
         Ok(uHuge { digits })
     }
 }
