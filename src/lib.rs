@@ -3,6 +3,8 @@ mod mul;
 
 use std::fmt;
 
+use anyhow::Result;
+
 #[cfg(target_pointer_width = "64")]
 #[allow(non_camel_case_types)]
 type word = u64;
@@ -15,6 +17,20 @@ type dword = u128;
 #[derive(Debug, PartialEq, Eq)]
 pub struct uHuge {
     digits: Vec<word>,
+}
+
+impl uHuge {
+    pub fn from_str(s: &str) -> Result<Self> {
+        let mut digits = Vec::new();
+        let mut end = s.len();
+        let width = word::BITS as usize / 4;
+        while end > width {
+            digits.push(word::from_str_radix(&s[(end - width)..end], 16)?);
+            end -= width;
+        }
+        digits.push(word::from_str_radix(&s[..end], 16)?);
+        Ok(uHuge { digits })
+    }
 }
 
 pub(crate) fn pop_zero(digits: &mut Vec<word>) {
