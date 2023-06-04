@@ -27,6 +27,15 @@ fn sub(acc: &mut Vec<word>, lhs: &Vec<word>, rhs: &Vec<word>) {
     pop_zero(acc);
 }
 
+pub(crate) fn sub_assign(acc: &mut [word], rhs: &[word]) {
+    let mut borrow = false;
+    for i in 0..acc.len() {
+        let ad = if acc.len() > i { acc[i] } else { 0 };
+        let rd = if rhs.len() > i { rhs[i] } else { 0 };
+        (acc[i], borrow) = borrowing_sub(ad, rd, borrow);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::*;

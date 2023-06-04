@@ -1,5 +1,5 @@
 mod add;
-mod sub;
+pub mod sub;
 
 use crate::word;
 

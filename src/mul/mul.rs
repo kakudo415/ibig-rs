@@ -1,6 +1,6 @@
 use std::ops;
 
-use super::pred_carrying_mul;
+use super::{carrying_mul, pred_carrying_mul};
 use crate::{pop_zero, uHuge, word};
 
 impl ops::Mul for &uHuge {
@@ -9,12 +9,16 @@ impl ops::Mul for &uHuge {
     fn mul(self, rhs: Self) -> Self::Output {
         let len = self.digits.len() + rhs.digits.len();
         let mut digits = vec![0; len];
-        mul(&mut digits, &self.digits, &rhs.digits);
+        mul_nn(&mut digits, &self.digits, &rhs.digits);
+        pop_zero(&mut digits);
         uHuge { digits }
     }
 }
 
-fn mul(acc: &mut Vec<word>, lhs: &Vec<word>, rhs: &Vec<word>) {
+pub(crate) fn mul_nn(acc: &mut [word], lhs: &[word], rhs: &[word]) {
+    for a in acc.iter_mut() {
+        *a = 0;
+    }
     for (i, ld) in lhs.iter().enumerate() {
         let mut carry = 0;
         for (j, rd) in rhs.iter().enumerate() {
@@ -22,7 +26,13 @@ fn mul(acc: &mut Vec<word>, lhs: &Vec<word>, rhs: &Vec<word>) {
         }
         acc[i + rhs.len()] = carry;
     }
-    pop_zero(acc);
+}
+
+pub(crate) fn mul_assign_n1(acc: &mut [word], d: word) {
+    let mut carry = 0;
+    for a in acc {
+        (*a, carry) = carrying_mul(*a, d, carry);
+    }
 }
 
 #[cfg(test)]
