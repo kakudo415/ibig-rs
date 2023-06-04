@@ -2,20 +2,19 @@ use std::ops;
 
 use crate::mul::{mul_assign_n1, mul_nn};
 use crate::sub::sub_assign;
-use crate::{pop_zero, uHuge, word};
+use crate::{uHuge, word};
 
 impl ops::Div for &uHuge {
     type Output = uHuge;
 
     fn div(self, rhs: Self) -> Self::Output {
-        let mut digits = div(&self.digits, &rhs.digits);
-        pop_zero(&mut digits);
-        uHuge { digits }
+        let digits = div(&self.digits, &rhs.digits);
+        uHuge { digits }.pop_leading_zeros()
     }
 }
 
-pub(crate) fn div(lhs: &Vec<word>, rhs: &Vec<word>) -> Vec<word> {
-    let inverse = fixed_inverse(&rhs);
+pub(crate) fn div(lhs: &[word], rhs: &[word]) -> Vec<word> {
+    let inverse = fixed_inverse(rhs);
     let mut acc = vec![0; lhs.len() + inverse.len()];
     mul_nn(&mut acc, lhs, &inverse);
     acc[inverse.len()..].to_vec() // remove digits after the point
@@ -32,7 +31,7 @@ pub(crate) fn fixed_inverse(op: &[word]) -> Vec<word> {
     'check_accuracy: loop {
         mul_nn(&mut acc0[..op.len() * 4], &pred, &pred);
         mul_assign_n1(&mut pred, 2);
-        mul_nn(&mut acc1[..op.len() * 6], &acc0[..op.len() * 4], &op);
+        mul_nn(&mut acc1[..op.len() * 6], &acc0[..op.len() * 4], op);
         sub_assign(&mut pred, &acc1[op.len() * 2..op.len() * 4]);
 
         for i in 0..inverse.len() {

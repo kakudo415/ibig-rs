@@ -1,6 +1,6 @@
 use std::ops;
 
-use crate::{dword, pop_zero, uHuge, word};
+use crate::{dword, uHuge, word};
 
 impl ops::Mul for &uHuge {
     type Output = uHuge;
@@ -9,8 +9,7 @@ impl ops::Mul for &uHuge {
         let len = self.digits.len() + rhs.digits.len();
         let mut digits = vec![0; len];
         mul_nn(&mut digits, &self.digits, &rhs.digits);
-        pop_zero(&mut digits);
-        uHuge { digits }
+        uHuge { digits }.pop_leading_zeros()
     }
 }
 

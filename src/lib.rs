@@ -31,17 +31,17 @@ impl uHuge {
             end -= width;
         }
         digits.push(word::from_str_radix(&s[..end], 16)?);
-        pop_zero(&mut digits);
-        Ok(uHuge { digits })
+        Ok(uHuge { digits }.pop_leading_zeros())
     }
-}
 
-pub(crate) fn pop_zero(digits: &mut Vec<word>) {
-    while let Some(digit) = digits.pop() {
-        if digit != 0 {
-            digits.push(digit);
-            break;
+    pub(crate) fn pop_leading_zeros(mut self) -> Self {
+        while let Some(digit) = self.digits.pop() {
+            if digit != 0 {
+                self.digits.push(digit);
+                break;
+            }
         }
+        self
     }
 }
 

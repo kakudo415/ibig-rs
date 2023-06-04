@@ -1,6 +1,6 @@
 use std::{cmp, ops};
 
-use crate::{pop_zero, uHuge, word};
+use crate::{uHuge, word};
 
 impl ops::Sub for &uHuge {
     type Output = uHuge;
@@ -9,11 +9,11 @@ impl ops::Sub for &uHuge {
         let len = cmp::max(self.digits.len(), rhs.digits.len());
         let mut digits = vec![0; len];
         sub(&mut digits, &self.digits, &rhs.digits);
-        uHuge { digits }
+        uHuge { digits }.pop_leading_zeros()
     }
 }
 
-fn sub(acc: &mut Vec<word>, lhs: &Vec<word>, rhs: &Vec<word>) {
+pub(crate) fn sub(acc: &mut [word], lhs: &[word], rhs: &[word]) {
     let mut borrow = false;
     for i in 0..acc.len() {
         let ld = if lhs.len() > i { lhs[i] } else { 0 };
@@ -23,7 +23,6 @@ fn sub(acc: &mut Vec<word>, lhs: &Vec<word>, rhs: &Vec<word>) {
     if borrow {
         panic!("UNDERFLOW OCCURED");
     }
-    pop_zero(acc);
 }
 
 pub(crate) fn sub_assign(acc: &mut [word], rhs: &[word]) {
