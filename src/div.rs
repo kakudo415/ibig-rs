@@ -1,8 +1,7 @@
 use std::ops;
 
-use super::mul::mul_assign_n1;
-use super::mul::mul_nn;
-use crate::add::sub::sub_assign;
+use crate::mul::{mul_assign_n1, mul_nn};
+use crate::sub::sub_assign;
 use crate::{pop_zero, uHuge, word};
 
 impl ops::Div for &uHuge {
@@ -23,7 +22,7 @@ pub(crate) fn div(lhs: &Vec<word>, rhs: &Vec<word>) -> Vec<word> {
 }
 
 // Calculate inverse of op in fixed point number by newton-raphson method
-fn fixed_inverse(op: &[word]) -> Vec<word> {
+pub(crate) fn fixed_inverse(op: &[word]) -> Vec<word> {
     let mut inverse = vec![0; op.len() * 2];
     let mut pred = vec![0; op.len() * 2];
     let mut acc0 = vec![0; op.len() * 4];
@@ -50,7 +49,6 @@ fn fixed_inverse(op: &[word]) -> Vec<word> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::*;
 
     #[test]
     fn fixed_inverse_0() {
